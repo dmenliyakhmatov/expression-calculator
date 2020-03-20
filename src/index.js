@@ -8,48 +8,39 @@ function expressionCalculator(expr) {
     let exprArr;
     let bracketsCount = 0;
     if (expr.includes(' ')) {
-        exprArr = expr.split(' ');
+        exprArr = expr.trim().split(' ');
     } else {
-        exprArr = expr.split('');
+        exprArr = expr.trim().split('');
     }
 
     exprArr = exprArr.filter(function(element) {
         return !(element == '');
     });
-   
 
-    exprArr.forEach(element => {
-        if (element ==='(') {
-            bracketsCount++;
+    if (expr.includes('(') || expr.includes(')')) {
+        if (expr.match(/\)/g) === null || expr.match(/\(/g) === null ||
+            expr.match(/\(/g).length != expr.match(/\)/g).length ) {
+            throw new Error("ExpressionError: Brackets must be paired");
         }
-        if (element === ')') {
-            bracketsCount--;
-        }
-    });
-    
-    if(bracketsCount != 0) { 
-        throw new Error("ExpressionError: Brackets must be paired");
     }
 
-    exprArr.forEach(element => {
-        if (element ==='/' && exprArr[element+1] === '0') {
-           throw new Error("TypeError: Division by zero.") 
-        }
-    });
+    if (expr.includes('/0') || expr.includes('/ 0')) {  
+        throw new Error("TypeError: Division by zero.") 
+    }
 
     function calculate(first, sign, second) {
         switch (sign) {
             case '*':
-                return Number(first)*Number(second);
+                return parseFloat(first)*parseFloat(second);
                 break;
             case '/':
-                return Number(first)/Number(second);
+                return parseFloat(first)/parseFloat(second);
                 break;
             case '+':
-                return Number(first)+Number(second);
+                return parseFloat(first)+parseFloat(second);
                 break;
             case '-':
-                return Number(first)-Number(second);
+                return parseFloat(first)-parseFloat(second);
                 break
         }
     }
@@ -57,6 +48,7 @@ function expressionCalculator(expr) {
     let stackNumbers = [];
     let stackSign = [];
     let priority = {
+        '(': 0,
         '+': 1,
         '-': 1,
         '*': 2,
@@ -64,24 +56,21 @@ function expressionCalculator(expr) {
     }
 
     exprArr.forEach( element => {
-        console.log(stackNumbers);
-        console.log(stackSign);
+
         if ( element === '+' || element === '-'|| element === '*' || element === '/' || element === '(' || element === ')'){
             let lastSign = stackSign[stackSign.length-1];
             let leftNumber;
             let rightNumber;
-            
-            if (priority.element > priority.lastSign || 
-                element === '(' || stackSign.length === 0) {
-                    console.log('1');
+
+            if (stackSign.length === 0 || element === '(' || priority[element] > priority[lastSign] ) {
                 stackSign.push(element);
                 return;
             }
+
             if (element === ')') {
-                console.log('5');
                 while (lastSign != '('){
-                    leftNumber = stackNumbers[stackNumbers.length-1];
-                    rightNumber = stackNumbers[stackNumbers.length-2];
+                    leftNumber = stackNumbers[stackNumbers.length-2];
+                    rightNumber = stackNumbers[stackNumbers.length-1];
                     stackNumbers.splice(stackNumbers.length-2, 2);
                     stackNumbers.push(calculate(leftNumber, lastSign, rightNumber));
                     stackSign.pop();
@@ -90,11 +79,15 @@ function expressionCalculator(expr) {
                 stackSign.pop();
                 return;
             }
-            if ( priority.element > priority.lastSign) {
-                console.log('4');
-                while(priority.element > priority.lastSign || lastSign ==='(') {
-                    leftNumber = stackNumbers[stackNumbers.length-1];
-                    rightNumber = stackNumbers[stackNumbers.length-2];
+
+            if ( element != "(" && element != ")" && priority[element] < priority[lastSign] ||
+                 priority[element] === priority[lastSign]) {
+                while(priority[element] < priority[lastSign] || priority[element] === priority[lastSign]) {
+                    if (lastSign ==='(') {
+                        break;
+                    }
+                    leftNumber = stackNumbers[stackNumbers.length-2];
+                    rightNumber = stackNumbers[stackNumbers.length-1];
                     stackNumbers.splice(stackNumbers.length-2, 2);
                     stackNumbers.push(calculate(leftNumber, lastSign, rightNumber));
                     stackSign.pop();
@@ -112,14 +105,16 @@ function expressionCalculator(expr) {
         let leftNumber;
         let rightNumber;
         while (stackSign.length !=0) {
-            leftNumber = stackNumbers[stackNumbers.length-1];
-            rightNumber = stackNumbers[stackNumbers.length-2];
+            leftNumber = stackNumbers[stackNumbers.length-2];
+            rightNumber = stackNumbers[stackNumbers.length-1];
             stackNumbers.splice(stackNumbers.length-2, 2);
             stackNumbers.push(calculate(leftNumber, lastSign, rightNumber));
             stackSign.pop();
+            lastSign = stackSign[stackSign.length-1];
         }
+        result = parseFloat(stackNumbers[0]);
     } else {
-        result = Number(stackNumbers[0]);
+        result = parseFloat(stackNumbers[0]);
     }
 
     return result;
