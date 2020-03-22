@@ -45,11 +45,7 @@ function expressionCalculator(expr) {
   }
   
     /*разбиваем строку на массив*/
-    if (expr.includes(' ')) {
-        exprArr = expr.split(' ');
-    } else {
-        exprArr = expr.split('');
-    }
+    exprArr = expr.split(expr.includes(' ')?(' '):(''));
   
     /* Исключение пробелов из массива*/
     exprArr = exprArr.filter(function(element) {
@@ -59,7 +55,7 @@ function expressionCalculator(expr) {
     /* Отсечение выражений с непарными скобками*/
     if (expr.includes('(') || expr.includes(')')) {
         if (expr.match(/\)/g) === null || expr.match(/\(/g) === null ||
-            expr.match(/\(/g).length != expr.match(/\)/g).length ) {
+            expr.match(/\(/g).length !== expr.match(/\)/g).length ) {
             throw new Error("ExpressionError: Brackets must be paired");
         }
     }
@@ -81,14 +77,14 @@ function expressionCalculator(expr) {
             }
   
             if (element === ')') {
-                while (lastSign != '('){
+                while (lastSign !== '('){
                     calculateStack();
                 }
                 stackSign.pop();
                 return;
             }
   
-            if ( element != "(" && element != ")" && priority[element] < priority[lastSign] ||
+            if ( element !== "(" && element != ")" && priority[element] < priority[lastSign] ||
                  priority[element] === priority[lastSign]) {
                 while(priority[element] < priority[lastSign] || priority[element] === priority[lastSign]) {
                     if (lastSign ==='(') {
@@ -103,9 +99,9 @@ function expressionCalculator(expr) {
          }
     })
   
-    if (stackSign.length != 0) {
+    if (stackSign.length !== 0) {
       lastSign = stackSign[stackSign.length-1];
-        while (stackSign.length != 0) {
+        while (stackSign.length !== 0) {
            calculateStack();
         }
         result = parseFloat(stackNumbers[0]);
